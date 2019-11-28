@@ -260,13 +260,23 @@ public:
     const unsigned int cols = b;
     const unsigned int depth = c;
     std::array<unsigned int, 3> matrixSize = {rows, cols, depth};
-    std::array<std::array<std::array<double, c>, b>, a> data;
+    double *data = (double*) malloc(sizeof(double) * a * b * c);
 
     ScalarField(){};
 
+    int index(uint i, uint j, uint k)
+    {
+        return k + j * b + i * a * b;
+    }
+
     double operator()(unsigned int i, unsigned int j, unsigned int k)
     {
-        return data[i][j][k];
+        return data[index(i, j, k)];
+    }
+
+    void operator()(uint i, uint j, uint k, double v)
+    {
+        data[index(i, j, k)] = v;
     }
 
     ScalarField<a, b, c> operator+(double n)
@@ -278,7 +288,7 @@ public:
             {
                 for (int k = 0; k < matrixSize[2]; ++k)
                 {
-                    N.data[i][j][k] = operator()(i, j, k) + n;
+                    N(i, j, k, operator()(i, j, k) + n);
                 }
             }
         }
@@ -294,7 +304,7 @@ public:
             {
                 for (int k = 0; k < matrixSize[2]; ++k)
                 {
-                    N.data[i][j][k] = operator()(i, j, k) * n;
+                    N(i, j, k, operator()(i, j, k) * n);
                 }
             }
         }
@@ -310,7 +320,7 @@ public:
             {
                 for (int k = 0; k < matrixSize[2]; ++k)
                 {
-                    N.data[i][j][k] = operator()(i, j, k) + A(i, j, k);
+                    N(i, j, k, operator()(i, j, k) + A(i, j, k));
                 }
             }
         }
@@ -326,7 +336,7 @@ public:
             {
                 for (int k = 0; k < matrixSize[2]; ++k)
                 {
-                    N.data[i][j][k] = operator()(i, j, k) * A(i, j, k);
+                    N(i, j, k, operator()(i, j, k) * A(i, j, k));
                 }
             }
         }
@@ -341,7 +351,7 @@ public:
             {
                 for (int k = 0; k < matrixSize[2]; ++k)
                 {
-                    data[i][j][k] += n;
+                    data[index(i, j, k)] += n;
                 }
             }
         }
@@ -356,7 +366,7 @@ public:
             {
                 for (int k = 0; k < matrixSize[2]; ++k)
                 {
-                    data[i][j][k] *= n;
+                    data[index(i, j, k)] *= n;
                 }
             }
         }
@@ -371,7 +381,7 @@ public:
             {
                 for (int k = 0; k < matrixSize[2]; ++k)
                 {
-                    data[i][j][k] += A(i, j, k);
+                    data[index(i, j, k)] += A(i, j, k);
                 }
             }
         }
@@ -386,7 +396,7 @@ public:
             {
                 for (int k = 0; k < matrixSize[2]; ++k)
                 {
-                    data[i][j][k] *= A(i, j, k);
+                    data[index(i, j, k)] *= A(i, j, k);
                 }
             }
         }
@@ -404,11 +414,11 @@ public:
                 {
                     if(operator()(i, j, k) == 0)
                     {
-                        N.data[i][j][k] = 0;
+                        N(i, j, k, 0);
                     }
                     else
                     {
-                        N.data[i][j][k] = pow(operator()(i, j, k), n);
+                        N(i, j, k, pow(operator()(i, j, k), n));
                     }
                 }
             }
@@ -424,7 +434,7 @@ public:
             {
                 for (int k = 0; k < matrixSize[2]; ++k)
                 {
-                    data[i][j][k] = dataIn[i][j][k];
+                    operator()(i, j, k, dataIn[i][j][k]);
                 }
             }
         }
@@ -439,7 +449,7 @@ public:
             {
                 for (int k = 0; k < matrixSize[2]; ++k)
                 {
-                    data[i][j][k] = dataIn[i][j][k];
+                    operator()(i, j, k, dataIn[i][j][k]);
                 }
             }
         }
@@ -454,7 +464,7 @@ public:
             {
                 for (int k = 0; k < matrixSize[2]; ++k)
                 {
-                    data[i][j][k] = dataIn(i, j, k);
+                    operator()(i, j, k, dataIn(i, j, k));
                 }
             }
         }
@@ -473,33 +483,33 @@ public:
                 {
                     if (i > 0 && j > 0 && k > 0 && i + 1 < matrixSize[0] && j + 1 < matrixSize[1] && k + 1 < matrixSize[2])
                     {
-                        dFdx = (data[i + 1][j][k] - data[i - 1][j][k]) / (2 * spacing.x);
-                        dFdy = (data[i][j + 1][k] - data[i][j - 1][k]) / (2 * spacing.y);
-                        dFdz = (data[i][j][k + 1] - data[i][j][k - 1]) / (2 * spacing.z);
+                        dFdx = (operator()(i + 1, j, k) - operator()(i - 1, j, k)) / (2 * spacing.x);
+                        dFdy = (operator()(i, j + 1, k) - operator()(i, j - 1, k)) / (2 * spacing.y);
+                        dFdz = (operator()(i, j, k + 1) - operator()(i, j, k - 1)) / (2 * spacing.z);
                     }
                     if (i == 0)
                     {
-                        dFdx = (data[i + 1][j][k] - data[i][j][k]) / (spacing.x);
+                        dFdx = (operator()(i + 1, j, k) - operator()(i, j, k)) / (spacing.x);
                     }
                     if (i + 1 == matrixSize[0])
                     {
-                        dFdx = (data[i][j][k] - data[i - 1][j][k]) / (spacing.x);
+                        dFdx = (operator()(i, j, k) - operator()(i - 1, j, k)) / (spacing.x);
                     }
                     if (k == 0)
                     {
-                        dFdz = (data[i][j][k + 1] - data[i][j][k]) / (spacing.z);
+                        dFdz = (operator()(i, j, k + 1) - operator()(i, j, k)) / (spacing.z);
                     }
                     if (k + 1 == matrixSize[2])
                     {
-                        dFdz = (data[i][j][k] - data[i][j][k - 1]) / (spacing.z);
+                        dFdz = (operator()(i, j, k) - operator()(i, j, k - 1)) / (spacing.z);
                     }
                     if (j == 0)
                     {
-                        dFdy = (data[i][j + 1][k] - data[i][j][k]) / (spacing.y);
+                        dFdy = (operator()(i, j + 1, k) - operator()(i, j, k)) / (spacing.y);
                     }
                     if (j + 1 == matrixSize[1])
                     {
-                        dFdy = (data[i][j][k] - data[i][j - 1][k]) / (spacing.y);
+                        dFdy = (operator()(i, j, k) - operator()(i, j - 1, k)) / (spacing.y);
                     }
                     Gradiented[i][j][k] = Vec3D(dFdx, dFdy, dFdz);
                 }
@@ -546,13 +556,23 @@ public:
     const unsigned int cols = b;
     const unsigned int depth = c;
     std::array<unsigned int, 3> matrixSize = {rows, cols, depth};
-    std::array<std::array<std::array<Vec3D, c>, b>, a> data;
+    Vec3D *data = (Vec3D*) malloc(sizeof(Vec3D) * a * b * c);
 
     VectorField(){};
 
+    int index(uint i, uint j, uint k)
+    {
+        return k + j * b + i * a * b;
+    }
+
     Vec3D operator()(unsigned int i, unsigned int j, unsigned int k)
     {
-        return data[i][j][k];
+        return data[index(i, j, k)];
+    }
+
+    void operator()(uint i, uint j, uint k, Vec3D v)
+    {
+        data[index(i, j, k)] = v;
     }
 
     ScalarField<a, b, c> getX()
@@ -564,7 +584,7 @@ public:
             {
                 for (int k = 0; k < matrixSize[2]; ++k)
                 {
-                    X.data[i][j][k] = operator()(i, j, k).x;
+                    X(i, j, k, operator()(i, j, k).x);
                 }
             }
         }
@@ -580,7 +600,7 @@ public:
             {
                 for (int k = 0; k < matrixSize[2]; ++k)
                 {
-                    Y.data[i][j][k] = operator()(i, j, k).y;
+                    Y(i, j, k, operator()(i, j, k).y);
                 }
             }
         }
@@ -596,7 +616,7 @@ public:
             {
                 for (int k = 0; k < matrixSize[2]; ++k)
                 {
-                    Z.data[i][j][k] = operator()(i, j, k).z;
+                    Z(i, j, k, operator()(i, j, k).z);
                 }
             }
         }
@@ -612,7 +632,7 @@ public:
             {
                 for (int k = 0; k < matrixSize[2]; ++k)
                 {
-                    N.data[i][j][k] = operator()(i, j, k) + n;
+                    N(i, j, k, operator()(i, j, k) + n);
                 }
             }
         }
@@ -628,7 +648,7 @@ public:
             {
                 for (int k = 0; k < matrixSize[2]; ++k)
                 {
-                    N.data[i][j][k] = operator()(i, j, k) * n;
+                    N(i, j, k, operator()(i, j, k) * n);
                 }
             }
         }
@@ -644,7 +664,7 @@ public:
             {
                 for (int k = 0; k < matrixSize[2]; ++k)
                 {
-                    N.data[i][j][k] = operator()(i, j, k) + A(i, j, k);
+                    N(i, j, k, operator()(i, j, k) + A(i, j, k));
                 }
             }
         }
@@ -660,7 +680,7 @@ public:
             {
                 for (int k = 0; k < matrixSize[2]; ++k)
                 {
-                    N.data[i][j][k] = operator()(i, j, k) * A(i, j, k);
+                    N(i, j, k, operator()(i, j, k) * A(i, j, k));
                 }
             }
         }
@@ -676,7 +696,7 @@ public:
             {
                 for (int k = 0; k < matrixSize[2]; ++k)
                 {
-                    N.data[i][j][k] = operator()(i, j, k).dot(A(i, j, k));
+                    N(i, j, k, operator()(i, j, k).dot(A(i, j, k)));
                 }
             }
         }
@@ -691,7 +711,7 @@ public:
             {
                 for (int k = 0; k < matrixSize[2]; ++k)
                 {
-                    data[i][j][k] += n;
+                    data[index(i, j, k)] += n;
                 }
             }
         }
@@ -706,7 +726,7 @@ public:
             {
                 for (int k = 0; k < matrixSize[2]; ++k)
                 {
-                    data[i][j][k] *= n;
+                    data[index(i, j, k)] *= n;
                 }
             }
         }
@@ -721,7 +741,7 @@ public:
             {
                 for (int k = 0; k < matrixSize[2]; ++k)
                 {
-                    data[i][j][k] += A(i, j, k);
+                    data[index(i, j, k)] += A(i, j, k);
                 }
             }
         }
@@ -736,7 +756,7 @@ public:
             {
                 for (int k = 0; k < matrixSize[2]; ++k)
                 {
-                    data[i][j][k] *= A(i, j, k);
+                    data[index(i, j, k)] *= A(i, j, k);
                 }
             }
         }
@@ -751,7 +771,7 @@ public:
             {
                 for (int k = 0; k < matrixSize[2]; ++k)
                 {
-                    data[i][j][k] = dataIn[i][j][k];
+                    operator()(i, j, k, dataIn[i][j][k]);
                 }
             }
         }
@@ -766,7 +786,7 @@ public:
             {
                 for (int k = 0; k < matrixSize[2]; ++k)
                 {
-                    data[i][j][k] = dataIn[i][j][k];
+                    operator()(i, j, k, dataIn[i][j][k]);
                 }
             }
         }
@@ -781,7 +801,7 @@ public:
             {
                 for (int k = 0; k < matrixSize[2]; ++k)
                 {
-                    data[i][j][k] = Vec3D(fields[0](i, j, k), fields[1](i, j, k), fields[2](i, j, k));
+                    operator()(i, j, k, Vec3D(fields[0](i, j, k), fields[1](i, j, k), fields[2](i, j, k)));
                 }
             }
         }
@@ -796,7 +816,7 @@ public:
             {
                 for (int k = 0; k < matrixSize[2]; ++k)
                 {
-                    data[i][j][k] = field(i, j, k);
+                    operator()(i, j, k, field(i, j, k));
                 }
             }
         }
@@ -812,7 +832,7 @@ public:
             {
                 for (int k = 0; k < matrixSize[2]; ++k)
                 {
-                    N.data[i][j][k] = operator()(i, j, k).cross(A(i, j, k));
+                    N(i, j, k, operator()(i, j, k).cross(A(i, j, k)));
                 }
             }
         }
@@ -831,44 +851,44 @@ public:
                 {
                     if (i > 0 && j > 0 && k > 0 && i + 1 < matrixSize[0] && j + 1 < matrixSize[1] && k + 1 < matrixSize[2])
                     {
-                        dXdy = (data[i][j + 1][k].x - data[i][j - 1][k].x) / (2 * spacing.y);
-                        dXdz = (data[i][j][k + 1].x - data[i][j][k - 1].x) / (2 * spacing.z);
-                        dYdx = (data[i + 1][j][k].y - data[i - 1][j][k].y) / (2 * spacing.x);
-                        dYdz = (data[i][j][k + 1].y - data[i][j][k - 1].y) / (2 * spacing.z);
-                        dZdx = (data[i + 1][j][k].z - data[i - 1][j][k].z) / (2 * spacing.x);
-                        dZdy = (data[i][j + 1][k].z - data[i][j - 1][k].z) / (2 * spacing.y);
+                        dXdy = (operator()(i, j + 1, k).x - operator()(i, j - 1, k).x) / (2 * spacing.y);
+                        dXdz = (operator()(i, j, k + 1).x - operator()(i, j, k - 1).x) / (2 * spacing.z);
+                        dYdx = (operator()(i + 1, j, k).y - operator()(i - 1, j, k).y) / (2 * spacing.x);
+                        dYdz = (operator()(i, j, k + 1).y - operator()(i, j, k - 1).y) / (2 * spacing.z);
+                        dZdx = (operator()(i + 1, j, k).z - operator()(i - 1, j, k).z) / (2 * spacing.x);
+                        dZdy = (operator()(i, j + 1, k).z - operator()(i, j - 1, k).z) / (2 * spacing.y);
                     }
                     if (i == 0)
                     {
-                        dZdx = (data[i + 1][j][k].z - data[i][j][k].z) / (spacing.x);
-                        dYdx = (data[i + 1][j][k].y - data[i][j][k].y) / (spacing.x);
+                        dZdx = (operator()(i + 1, j, k).z - operator()(i, j, k).z) / (spacing.x);
+                        dYdx = (operator()(i + 1, j, k).y - operator()(i, j, k).y) / (spacing.x);
                     }
                     if (i + 1 == matrixSize[0])
                     {
-                        dZdx = (data[i][j][k].z - data[i - 1][j][k].z) / (spacing.x);
-                        dYdx = (data[i][j][k].y - data[i - 1][j][k].y) / (spacing.x);
+                        dZdx = (operator()(i, j, k).z - operator()(i - 1, j, k).z) / (spacing.x);
+                        dYdx = (operator()(i, j, k).y - operator()(i - 1, j, k).y) / (spacing.x);
                     }
                     if (k == 0)
                     {
-                        dXdz = (data[i][j][k + 1].x - data[i][j][k].x) / (spacing.z);
-                        dYdz = (data[i][j][k + 1].y - data[i][j][k].y) / (spacing.z);
+                        dXdz = (operator()(i, j, k + 1).x - operator()(i, j, k).x) / (spacing.z);
+                        dYdz = (operator()(i, j, k + 1).y - operator()(i, j, k).y) / (spacing.z);
                     }
                     if (k + 1 == matrixSize[2])
                     {
-                        dXdz = (data[i][j][k].x - data[i][j][k - 1].x) / (spacing.z);
-                        dYdz = (data[i][j][k].y - data[i][j][k - 1].y) / (spacing.z);
+                        dXdz = (operator()(i, j, k).x - operator()(i, j, k - 1).x) / (spacing.z);
+                        dYdz = (operator()(i, j, k).y - operator()(i, j, k - 1).y) / (spacing.z);
                     }
                     if (j == 0)
                     {
-                        dXdy = (data[i][j + 1][k].x - data[i][j][k].x) / (spacing.y);
-                        dZdy = (data[i][j + 1][k].z - data[i][j][k].z) / (spacing.y);
+                        dXdy = (operator()(i, j + 1, k).x - operator()(i, j, k).x) / (spacing.y);
+                        dZdy = (operator()(i, j + 1, k).z - operator()(i, j, k).z) / (spacing.y);
                     }
                     if (j + 1 == matrixSize[1])
                     {
-                        dXdy = (data[i][j][k].x - data[i][j - 1][k].x) / (spacing.y);
-                        dZdy = (data[i][j][k].z - data[i][j - 1][k].z) / (spacing.y);
+                        dXdy = (operator()(i, j, k).x - operator()(i, j - 1, k).x) / (spacing.y);
+                        dZdy = (operator()(i, j, k).z - operator()(i, j - 1, k).z) / (spacing.y);
                     }
-                    Curled.data[i][j][k] = Vec3D(dZdy - dYdz, dXdz - dZdx, dYdx - dXdy);
+                    Curled(i, j, k, Vec3D(dZdy - dYdz, dXdz - dZdx, dYdx - dXdy));
                 }
             }
         }
@@ -887,35 +907,35 @@ public:
                 {
                     if (i > 0 && j > 0 && k > 0 && i + 1 < matrixSize[0] && j + 1 < matrixSize[1] && k + 1 < matrixSize[2])
                     {
-                        dXdx = (data[i + 1][j][k].x - data[i - 1][j][k].x) / (2 * spacing.x);
-                        dYdy = (data[i][j + 1][k].y - data[i][j - 1][k].y) / (2 * spacing.y);
-                        dZdz = (data[i][j][k + 1].z - data[i][j][k - 1].z) / (2 * spacing.z);
+                        dXdx = (operator()(i + 1, j, k).x - operator()(i - 1, j, k).x) / (2 * spacing.x);
+                        dYdy = (operator()(i, j + 1, k).y - operator()(i, j - 1, k).y) / (2 * spacing.y);
+                        dZdz = (operator()(i, j, k + 1).z - operator()(i, j, k - 1).z) / (2 * spacing.z);
                     }
                     if (i == 0)
                     {
-                        dXdx = (data[i + 1][j][k].x - data[i][j][k].x) / (spacing.x);
+                        dXdx = (operator()(i + 1, j, k).x - operator()(i, j, k).x) / (spacing.x);
                     }
                     if (i + 1 == matrixSize[0])
                     {
-                        dXdx = (data[i][j][k].x - data[i - 1][j][k].x) / (spacing.x);
+                        dXdx = (operator()(i, j, k).x - operator()(i - 1, j, k).x) / (spacing.x);
                     }
                     if (k == 0)
                     {
-                        dZdz = (data[i][j][k + 1].z - data[i][j][k].z) / (spacing.z);
+                        dZdz = (operator()(i, j, k + 1).z - operator()(i, j, k).z) / (spacing.z);
                     }
                     if (k + 1 == matrixSize[2])
                     {
-                        dZdz = (data[i][j][k].z - data[i][j][k - 1].z) / (spacing.z);
+                        dZdz = (operator()(i, j, k).z - operator()(i, j, k - 1).z) / (spacing.z);
                     }
                     if (j == 0)
                     {
-                        dYdy = (data[i][j + 1][k].y - data[i][j][k].y) / (spacing.y);
+                        dYdy = (operator()(i, j + 1, k).y - operator()(i, j, k).y) / (spacing.y);
                     }
                     if (j + 1 == matrixSize[1])
                     {
-                        dYdy = (data[i][j][k].y - data[i][j - 1][k].y) / (spacing.y);
+                        dYdy = (operator()(i, j, k).y - operator()(i, j - 1, k).y) / (spacing.y);
                     }
-                    Diverged.data[i][j][k] = dXdx + dYdy + dZdz;
+                    Diverged(i, j, k, dXdx + dYdy + dZdz);
                 }
             }
         }
@@ -936,6 +956,7 @@ public:
                 {
                     for (int k = 0; k < matrixSize[2]; ++k)
                     {
+                        std::cout << i << " " << j << " " << k << " " << operator()(i, j, k).sstr() << "\n";
                         myfile << i << " " << j << " " << k << " " << operator()(i, j, k).sstr() << "\n";
                     }
                 }
