@@ -5,7 +5,7 @@
 // Fundamental Constants
 #define dt 1e-12                            // s
 #define REAL_SIZE Vec3D(1, 1, 1)            // m
-constexpr SizeTuple SIM_RES = {20, 10, 100}; // dimensionless max of 13500 elements
+constexpr SizeTuple3D SIM_RES = {20, 10, 100}; // dimensionless max of 13500 elements
 
 // Spacing between elements on the matrix
 Vec3D spacing = Vec3D(REAL_SIZE.x / SIM_RES.x, REAL_SIZE.y / SIM_RES.y, REAL_SIZE.z / SIM_RES.z);
