@@ -12,17 +12,15 @@
 #define X_HAT Vec3D(1, 0, 0)
 #define Y_HAT Vec3D(0, 1, 0)
 #define Z_HAT Vec3D(0, 0, 1)
-#define EPSILON_0 8.85418782e-12        // m^-3 kg^-1 s^4 A^2
-#define MU_0 1.25663706e-6              // m kg s^-2 A^-2
-#define PI M_PI                         // dimensionless
-#define LIGHT_SPEED 299792458.0         // m s^-1
-#define ETA LIGHT_SPEED * 4 * PI * 1e-7 // m^2 kg s^-3 A^-2
-#define M_PROTON 1.67262192369e-27      // kg
-#define M_ELECTRON 9.10938356e-31       // kg
-#define M_NEUTRON 1.674927471e-27       // kg
-#define E_CHARGE 1.60217662e-19         // s A
-#define AVOGADRO 6.02214086e+23         // dimensionless
-#define k_B 1.38064852e-23              // m^2 kg s^-2 K^-1
+#define PI M_PI                        // dimensionless
+#define LIGHT_SPEED 299792458.0        // m s^-1
+#define AVOGADRO 6.02214086e+23        // dimensionless
+#define E_CHARGE 1.602176634 * 1e-19   // s A
+#define M_PROTON 1.67262192369 * 1e-27 // kg
+#define M_ELECTRON 9.10938356e-31      // kg
+#define MU_0 PI * 4e-7                 // m kg s^-2 A^-2
+#define EPSILON_0 8.85418782e-12       // m^-3 kg^-1 s^4 A^2
+#define k_B 1.38064852e-23             // m^2 kg s^-2 K^-1
 
 // A vector function class
 class Vec3D
@@ -103,6 +101,11 @@ public:
     Vec3D operator/(double n)
     {
         return multiply(1.0 / n);
+    }
+
+    Vec3D operator/(Vec3D n)
+    {
+        return multiply(Vec3D(1.0/n.x, 1.0/n.y, 1.0/n.z));
     }
 
     double operator%(Vec3D n)
@@ -244,10 +247,226 @@ public:
     }
 };
 
+class Vec2D
+{
+public:
+    double x, y;
+    Vec2D(double x_, double y_)
+    {
+        x = x_;
+        y = y_;
+    }
+
+    Vec2D()
+    {
+        x = 0;
+        y = 0;
+    }
+
+    Vec2D operator-=(Vec2D n)
+    {
+        this->x - n.x;
+        this->y - n.y;
+        return *this;
+    }
+
+    Vec2D operator+=(Vec2D n)
+    {
+        this->x + n.x;
+        this->y + n.y;
+        return *this;
+    }
+
+    Vec2D operator-(Vec2D n)
+    {
+        return add(n * -1);
+    }
+
+    Vec2D operator-()
+    {
+        return *this * -1;
+    }
+
+    Vec2D operator+(Vec2D n)
+    {
+        return add(n);
+    }
+
+    Vec2D operator*(Vec2D n)
+    {
+        return multiply(n);
+    }
+
+    Vec2D operator*=(Vec2D n)
+    {
+        this->x *n.x;
+        this->y *n.y;
+        return *this;
+    }
+
+    Vec2D operator*(double n)
+    {
+        return multiply(n);
+    }
+
+    Vec2D operator*=(double n)
+    {
+        this->x *n;
+        this->y *n;
+        return *this;
+    }
+
+    Vec2D operator/(double n)
+    {
+        return multiply(1.0 / n);
+    }
+
+    Vec2D operator/(Vec2D n)
+    {
+        return multiply(Vec2D(1.0/n.x, 1.0/n.y));
+    }
+
+    double operator%(Vec2D n)
+    {
+        return dot(n);
+    }
+
+    Vec2D operator()(double x, double y)
+    {
+        Vec2D d = Vec2D(x, y);
+        return d;
+    }
+
+    bool operator==(Vec2D n)
+    {
+        return n.x == x && n.y == y;
+    }
+
+    double dot(Vec2D n)
+    {
+        return x * n.x + y * n.y;
+    }
+
+    Vec2D add(Vec2D n)
+    {
+        return Vec2D(x + n.x, y + n.y);
+    }
+
+    Vec2D add(double n)
+    {
+        return Vec2D(x + n, y + n);
+    }
+
+    Vec2D multiply(Vec2D n)
+    {
+        return Vec2D(x * n.x, y * n.y);
+    }
+
+    Vec2D multiply(double n)
+    {
+        return Vec2D(x * n, y * n);
+    }
+
+    std::string cstr()
+    {
+        return "x: " + std::to_string(x) + "\r\ny: " + std::to_string(y);
+    }
+
+    std::string vstr()
+    {
+        return "<" + std::to_string(x) + ", " + std::to_string(y) + ">";
+    }
+
+    std::string sstr()
+    {
+        return std::to_string(x) + " " + std::to_string(y);
+    }
+
+    std::string cstr(Vec2D n)
+    {
+        return "x: " + std::to_string(n.x) + "\r\ny: " + std::to_string(n.y);
+    }
+
+    std::string vstr(Vec2D n)
+    {
+        return "<" + std::to_string(n.x) + ", " + std::to_string(n.y) + ">";
+    }
+
+    std::string sstr(Vec2D n)
+    {
+        return std::to_string(n.x) + " " + std::to_string(n.y);
+    }
+
+    Vec2D sinVec(Vec2D v)
+    {
+        return Vec2D(sin(v.x), sin(v.y));
+    }
+
+    Vec2D cosVec(Vec2D v)
+    {
+        return Vec2D(cos(v.x), cos(v.y));
+    }
+
+    Vec2D tanVec(Vec2D v)
+    {
+        return Vec2D(tan(v.x), tan(v.y));
+    }
+
+    double norm(Vec2D n)
+    {
+        return sqrt(n.dot(n));
+    }
+
+    double norm()
+    {
+        return sqrt(x * x + y * y);
+    }
+
+    double normSq()
+    {
+        return x * x + y * y;
+    }
+
+    Vec2D normalize(Vec2D n)
+    {
+        return n / n.norm();
+    }
+
+    Vec2D normalize()
+    {
+        double l = norm();
+        x /= l;
+        y /= l;
+        return *this;
+    }
+
+    Vec2D transform(double matrix[2][2])
+    {
+        double x_ = matrix[0][0] * x + matrix[0][1] * y;
+        double y_ = matrix[1][0] * x + matrix[1][1] * y;
+        return Vec2D(x_, y_);
+    }
+
+    Vec2D operator*(double matrix[2][2])
+    {
+        return transform(matrix);
+    }
+
+    Vec2D operator*=(double matrix[2][2])
+    {
+        return this->transform(matrix);
+    }
+};
+
 // Holds the size (requires integers)
-struct SizeTuple
+struct SizeTuple3D
 {
     const int x, y, z;
+};
+
+struct SizeTuple2D
+{
+    const int x, y;
 };
 
 // Represents a 3-D field of Scalars
@@ -260,9 +479,14 @@ public:
     const unsigned int cols = b;
     const unsigned int depth = c;
     std::array<unsigned int, 3> matrixSize = {rows, cols, depth};
-    double *data = (double*) malloc(sizeof(double) * a * b * c);
+    double *data = (double *)malloc(sizeof(double) * a * b * c);
 
     ScalarField(){};
+
+    ScalarField<a, b, c> (double *field)
+    {
+        data = field;
+    }
 
     int index(uint i, uint j, uint k)
     {
@@ -412,7 +636,7 @@ public:
             {
                 for (int k = 0; k < matrixSize[2]; ++k)
                 {
-                    if(operator()(i, j, k) == 0)
+                    if (operator()(i, j, k) == 0)
                     {
                         N(i, j, k, 0);
                     }
@@ -471,9 +695,9 @@ public:
         return *this;
     }
 
-    std::array<std::array<std::array<Vec3D, c>, b>, a> gradient(Vec3D spacing)
+    Vec3D *gradient(Vec3D spacing)
     {
-        std::array<std::array<std::array<Vec3D, c>, b>, a> Gradiented;
+        Vec3D *Gradiented = (Vec3D*) malloc(sizeof(Vec3D) * matrixSize[0] * matrixSize[1] * matrixSize[2]);
         double dFdx, dFdy, dFdz;
         for (int i = 0; i < matrixSize[0]; ++i)
         {
@@ -511,7 +735,7 @@ public:
                     {
                         dFdy = (operator()(i, j, k) - operator()(i, j - 1, k)) / (spacing.y);
                     }
-                    Gradiented[i][j][k] = Vec3D(dFdx, dFdy, dFdz);
+                    Gradiented[index(i, j, k)] = Vec3D(dFdx, dFdy, dFdz);
                 }
             }
         }
@@ -556,9 +780,28 @@ public:
     const unsigned int cols = b;
     const unsigned int depth = c;
     std::array<unsigned int, 3> matrixSize = {rows, cols, depth};
-    Vec3D *data = (Vec3D*) malloc(sizeof(Vec3D) * a * b * c);
+    Vec3D *data = (Vec3D *)malloc(sizeof(Vec3D) * a * b * c);
 
     VectorField(){};
+
+    VectorField<a, b, c> (Vec3D *field)
+    {
+        data = field;
+    }
+
+    VectorField<a, b, c> (ScalarField<a, b, c> A, ScalarField<a, b, c> B, ScalarField<a, b, c> C)
+    {
+        for(int i = 0; i < matrixSize[0]; ++i)
+        {
+            for(int j = 0; j < matrixSize[1]; ++j)
+            {
+                for(int k = 0; k < matrixSize[2]; ++k)
+                {
+                    operator()(i, j, k, Vec3D(A(i, j, k), B(i, j, k), C(i, j, k)));
+                }
+            }
+        }
+    }
 
     int index(uint i, uint j, uint k)
     {
@@ -763,6 +1006,22 @@ public:
         return *this;
     }
 
+    ScalarField<a, b, c> operator*(Vec3D A)
+    {
+        ScalarField<a, b, c> N;
+        for (int i = 0; i < matrixSize[0]; ++i)
+        {
+            for (int j = 0; j < matrixSize[1]; ++j)
+            {
+                for (int k = 0; k < matrixSize[2]; ++k)
+                {
+                    N(i, j, k, operator()(i, j, k).dot(A(i, j, k)));
+                }
+            }
+        }
+        return N;
+    }
+
     VectorField<a, b, c> operator<<(Vec3D dataIn[a][b][c])
     {
         for (int i = 0; i < matrixSize[0]; ++i)
@@ -941,6 +1200,12 @@ public:
         }
         return Diverged;
     }
+
+    VectorField<a, b, c> laplacian(Vec3D spacing)
+    {
+        return VectorField<a, b, c>(VectorField<a, b, c>(getX().gradient(spacing)).divergence(spacing), VectorField<a, b, c>(getY().gradient(spacing)).divergence(spacing), VectorField<a, b, c>(getZ().gradient(spacing)).divergence(spacing));
+    }
+
     void toFile(std::string filename)
     {
         std::ofstream myfile(filename);
@@ -956,9 +1221,578 @@ public:
                 {
                     for (int k = 0; k < matrixSize[2]; ++k)
                     {
-                        std::cout << i << " " << j << " " << k << " " << operator()(i, j, k).sstr() << "\n";
                         myfile << i << " " << j << " " << k << " " << operator()(i, j, k).sstr() << "\n";
                     }
+                }
+            }
+            myfile.close();
+        }
+        else
+        {
+            std::cout << filename + " was not openable" << std::endl;
+        }
+    }
+};
+
+template <uint a, uint b>
+class ScalarPlane
+{
+public:
+    unsigned const int dims = 2;
+    const unsigned int rows = a;
+    const unsigned int cols = b;
+    std::array<unsigned int, 2> matrixSize = {rows, cols};
+    double *data = (double *)malloc(sizeof(double) * a * b);
+
+    ScalarPlane(){};
+
+    ScalarPlane<a, b> (double *field)
+    {
+        data = field;
+    }
+
+    int index(uint i, uint j)
+    {
+        return j + i * a;
+    }
+
+    double operator()(unsigned int i, unsigned int j)
+    {
+        return data[index(i, j)];
+    }
+
+    void operator()(uint i, uint j, double v)
+    {
+        data[index(i, j)] = v;
+    }
+
+    ScalarPlane<a, b> operator+(double n)
+    {
+        ScalarPlane<a, b> N;
+        for (int i = 0; i < matrixSize[0]; ++i)
+        {
+            for (int j = 0; j < matrixSize[1]; ++j)
+            {
+                N(i, j, operator()(i, j) + n);
+            }
+        }
+        return N;
+    }
+
+    ScalarPlane<a, b> operator*(double n)
+    {
+        ScalarPlane<a, b> N;
+        for (int i = 0; i < matrixSize[0]; ++i)
+        {
+            for (int j = 0; j < matrixSize[1]; ++j)
+            {
+                N(i, j, operator()(i, j) * n);
+            }
+        }
+        return N;
+    }
+
+    ScalarPlane<a, b> operator+(ScalarPlane<a, b> A)
+    {
+        ScalarPlane<a, b> N;
+        for (int i = 0; i < matrixSize[0]; ++i)
+        {
+            for (int j = 0; j < matrixSize[1]; ++j)
+            {
+                N(i, j, operator()(i, j) + A(i, j));
+            }
+        }
+        return N;
+    }
+
+    ScalarPlane<a, b> operator*(ScalarPlane<a, b> A)
+    {
+        ScalarPlane<a, b> N;
+        for (int i = 0; i < matrixSize[0]; ++i)
+        {
+            for (int j = 0; j < matrixSize[1]; ++j)
+            {
+                N(i, j, operator()(i, j) * A(i, j));
+            }
+        }
+        return N;
+    }
+
+    ScalarPlane<a, b> operator+=(double n)
+    {
+        for (int i = 0; i < matrixSize[0]; ++i)
+        {
+            for (int j = 0; j < matrixSize[1]; ++j)
+            {
+                data[index(i, j)] += n;
+            }
+        }
+        return *this;
+    }
+
+    ScalarPlane<a, b> operator*=(double n)
+    {
+        for (int i = 0; i < matrixSize[0]; ++i)
+        {
+            for (int j = 0; j < matrixSize[1]; ++j)
+            {
+                data[index(i, j)] *= n;
+            }
+        }
+        return *this;
+    }
+
+    ScalarPlane<a, b> operator+=(ScalarPlane<a, b> A)
+    {
+        for (int i = 0; i < matrixSize[0]; ++i)
+        {
+            for (int j = 0; j < matrixSize[1]; ++j)
+            {
+                data[index(i, j)] += A(i, j);
+            }
+        }
+        return *this;
+    }
+
+    ScalarPlane<a, b> operator*=(ScalarPlane<a, b> A)
+    {
+        for (int i = 0; i < matrixSize[0]; ++i)
+        {
+            for (int j = 0; j < matrixSize[1]; ++j)
+            {
+                data[index(i, j)] *= A(i, j);
+            }
+        }
+        return *this;
+    }
+
+    ScalarPlane<a, b> operator^(double n)
+    {
+        ScalarPlane<a, b> N;
+        for (int i = 0; i < matrixSize[0]; ++i)
+        {
+            for (int j = 0; j < matrixSize[1]; ++j)
+            {
+                if (operator()(i, j) == 0)
+                {
+                    N(i, j, 0);
+                }
+                else
+                {
+                    N(i, j, pow(operator()(i, j), n));
+                }
+            }
+        }
+        return N;
+    }
+
+    ScalarPlane<a, b> operator<<(double dataIn[a][b])
+    {
+        for (int i = 0; i < matrixSize[0]; ++i)
+        {
+            for (int j = 0; j < matrixSize[1]; ++j)
+            {
+                operator()(i, j, dataIn[i][j]);
+            }
+        }
+        return *this;
+    }
+
+    ScalarPlane<a, b> operator<<(std::array<std::array<double, b>, a> dataIn)
+    {
+        for (int i = 0; i < matrixSize[0]; ++i)
+        {
+            for (int j = 0; j < matrixSize[1]; ++j)
+            {
+                operator()(i, j, dataIn[i][j]);
+            }
+        }
+        return *this;
+    }
+
+    ScalarPlane<a, b> operator<<(ScalarPlane<a, b> dataIn)
+    {
+        for (int i = 0; i < matrixSize[0]; ++i)
+        {
+            for (int j = 0; j < matrixSize[1]; ++j)
+            {
+                operator()(i, j, dataIn(i, j));
+            }
+        }
+        return *this;
+    }
+
+    Vec2D *gradient(Vec2D spacing)
+    {
+        Vec2D *Gradiented = (Vec2D*) malloc(sizeof(Vec2D) * matrixSize[0] * matrixSize[1]);
+        double dFdx, dFdy;
+        for (int i = 0; i < matrixSize[0]; ++i)
+        {
+            for (int j = 0; j < matrixSize[1]; ++j)
+            {
+                if (i > 0 && j > 0 && i + 1 < matrixSize[0] && j + 1 < matrixSize[1])
+                {
+                    dFdx = (operator()(i + 1, j) - operator()(i - 1, j)) / (2 * spacing.x);
+                    dFdy = (operator()(i, j + 1) - operator()(i, j - 1)) / (2 * spacing.y);
+                }
+                if (i == 0)
+                {
+                    dFdx = (operator()(i + 1, j) - operator()(i, j)) / (spacing.x);
+                }
+                if (i + 1 == matrixSize[0])
+                {
+                    dFdx = (operator()(i, j) - operator()(i - 1, j)) / (spacing.x);
+                }
+                if (j == 0)
+                {
+                    dFdy = (operator()(i, j + 1) - operator()(i, j)) / (spacing.y);
+                }
+                if (j + 1 == matrixSize[1])
+                {
+                    dFdy = (operator()(i, j) - operator()(i, j - 1)) / (spacing.y);
+                }
+                Gradiented[index(i, j)] = Vec2D(dFdx, dFdy);
+            }
+        }
+        return Gradiented;
+    }
+
+    void toFile(std::string filename)
+    {
+        std::ofstream myfile(filename);
+        if (myfile.is_open())
+        {
+            myfile << matrixSize[0] << "\n";
+            myfile << matrixSize[1] << "\n";
+
+            for (int i = 0; i < matrixSize[0]; ++i)
+            {
+                for (int j = 0; j < matrixSize[1]; ++j)
+                {
+                    myfile << i << " " << j << " " << operator()(i, j) << "\n";
+                }
+            }
+            myfile.close();
+        }
+        else
+        {
+            std::cout << filename + " was not openable" << std::endl;
+        }
+    }
+};
+
+template <uint a, uint b>
+class VectorPlane
+{
+public:
+    unsigned const int dims = 2;
+    const unsigned int rows = a;
+    const unsigned int cols = b;
+    std::array<unsigned int, 3> matrixSize = {rows, cols};
+    Vec2D *data = (Vec2D *)malloc(sizeof(Vec2D) * a * b);
+
+    VectorPlane(){};
+
+    VectorPlane<a, b> (Vec2D *field)
+    {
+        data = field;
+    }
+
+    VectorPlane<a, b> (ScalarPlane<a, b> A, ScalarPlane<a, b> B)
+    {
+        for(int i = 0; i < matrixSize[0]; ++i)
+        {
+            for(int j = 0; j < matrixSize[1]; ++j)
+            {
+                operator()(i, j, Vec2D(A(i, j), B(i, j)));
+            }
+        }
+    }
+
+    int index(uint i, uint j)
+    {
+        return j + i * a;
+    }
+
+    Vec2D operator()(unsigned int i, unsigned int j)
+    {
+        return data[index(i, j)];
+    }
+
+    void operator()(uint i, uint j, Vec2D v)
+    {
+        data[index(i, j)] = v;
+    }
+
+    ScalarPlane<a, b> getX()
+    {
+        ScalarPlane<a, b> X;
+        for (int i = 0; i < matrixSize[0]; ++i)
+        {
+            for (int j = 0; j < matrixSize[1]; ++j)
+            {
+                X(i, j, operator()(i, j).x);
+            }
+        }
+        return X;
+    }
+
+    ScalarPlane<a, b> getY()
+    {
+        ScalarPlane<a, b> Y;
+        for (int i = 0; i < matrixSize[0]; ++i)
+        {
+            for (int j = 0; j < matrixSize[1]; ++j)
+            {
+                Y(i, j, operator()(i, j).y);
+            }
+        }
+        return Y;
+    }
+
+    VectorPlane<a, b> operator+(Vec2D n)
+    {
+        VectorPlane<a, b> N;
+        for (int i = 0; i < matrixSize[0]; ++i)
+        {
+            for (int j = 0; j < matrixSize[1]; ++j)
+            {
+                N(i, j, operator()(i, j) + n);
+            }
+        }
+        return N;
+    }
+
+    VectorPlane<a, b> operator*(double n)
+    {
+        VectorPlane<a, b> N;
+        for (int i = 0; i < matrixSize[0]; ++i)
+        {
+            for (int j = 0; j < matrixSize[1]; ++j)
+            {
+                N(i, j, operator()(i, j) * n);
+            }
+        }
+        return N;
+    }
+
+    VectorPlane<a, b> operator+(VectorPlane<a, b> A)
+    {
+        VectorPlane<a, b> N;
+        for (int i = 0; i < matrixSize[0]; ++i)
+        {
+            for (int j = 0; j < matrixSize[1]; ++j)
+            {
+                N(i, j, operator()(i, j) + A(i, j));
+            }
+        }
+        return N;
+    }
+
+    VectorPlane<a, b> operator*(ScalarPlane<a, b> A)
+    {
+        VectorPlane<a, b> N;
+        for (int i = 0; i < matrixSize[0]; ++i)
+        {
+            for (int j = 0; j < matrixSize[1]; ++j)
+            {
+                for (int k = 0; k < matrixSize[2]; ++k)
+                {
+                    N(i, j, operator()(i, j) * A(i, j));
+                }
+            }
+        }
+        return N;
+    }
+
+    ScalarPlane<a, b> operator*(VectorPlane<a, b> A)
+    {
+        ScalarPlane<a, b> N;
+        for (int i = 0; i < matrixSize[0]; ++i)
+        {
+            for (int j = 0; j < matrixSize[1]; ++j)
+            {
+                N(i, j, operator()(i, j).dot(A(i, j)));
+            }
+        }
+        return N;
+    }
+
+    VectorPlane<a, b> operator+=(Vec2D n)
+    {
+        for (int i = 0; i < matrixSize[0]; ++i)
+        {
+            for (int j = 0; j < matrixSize[1]; ++j)
+            {
+                data[index(i, j)] = data[index(i, j)] + n;
+            }
+        }
+        return *this;
+    }
+
+    VectorPlane<a, b> operator*=(double n)
+    {
+        for (int i = 0; i < matrixSize[0]; ++i)
+        {
+            for (int j = 0; j < matrixSize[1]; ++j)
+            {
+                data[index(i, j)] = data[index(i, j)] * n;
+            }
+        }
+        return *this;
+    }
+
+    VectorPlane<a, b> operator+=(VectorPlane<a, b> A)
+    {
+        for (int i = 0; i < matrixSize[0]; ++i)
+        {
+            for (int j = 0; j < matrixSize[1]; ++j)
+            {
+                data[index(i, j)] = operator()(i, j) + A(i, j);
+            }
+        }
+        return *this;
+    }
+
+    VectorPlane<a, b> operator*=(ScalarPlane<a, b> A)
+    {
+        for (int i = 0; i < matrixSize[0]; ++i)
+        {
+            for (int j = 0; j < matrixSize[1]; ++j)
+            {
+                data[index(i, j)] *= A(i, j);
+            }
+        }
+        return *this;
+    }
+
+    ScalarPlane<a, b> operator*(Vec2D A)
+    {
+        ScalarPlane<a, b> N;
+        for (int i = 0; i < matrixSize[0]; ++i)
+        {
+            for (int j = 0; j < matrixSize[1]; j++)
+            {
+                N(i, j, operator()(i, j).dot(A(i, j)));
+            }
+        }
+        return N;
+    }
+
+    VectorPlane<a, b> operator<<(Vec2D dataIn[a][b])
+    {
+        for (int i = 0; i < matrixSize[0]; ++i)
+        {
+            for (int j = 0; j < matrixSize[1]; ++j)
+            {
+                operator()(i, j, dataIn[i][j]);
+            }
+        }
+        return *this;
+    }
+
+    VectorPlane<a, b> operator<<(std::array<std::array<Vec2D, b>, a> dataIn)
+    {
+        for (int i = 0; i < matrixSize[0]; ++i)
+        {
+            for (int j = 0; j < matrixSize[1]; ++j)
+            {
+                operator()(i, j, dataIn[i][j]);
+            }
+        }
+        return *this;
+    }
+
+    VectorPlane<a, b> operator<<(ScalarPlane<a, b> fields[2])
+    {
+        for (int i = 0; i < matrixSize[0]; ++i)
+        {
+            for (int j = 0; j < matrixSize[1]; ++j)
+            {
+                operator()(i, j, Vec2D(fields[0](i, j), fields[1](i, j)));
+            }
+        }
+        return *this;
+    }
+
+    VectorPlane<a, b> operator<<(VectorPlane<a, b> field)
+    {
+        for (int i = 0; i < matrixSize[0]; ++i)
+        {
+            for (int j = 0; j < matrixSize[1]; ++j)
+            {
+                operator()(i, j, field(i, j));
+            }
+        }
+        return *this;
+    }
+
+    VectorPlane<a, b> operator()(std::array<std::array<Vec2D, b>, a> field)
+    {
+        VectorPlane<a, b> N;
+        for(int i = 0; i < matrixSize[0]; ++i)
+        {
+            for(int j = 0; j < matrixSize[1]; ++j)
+            {
+                N(i, j, field[i][j]);
+            }
+        }
+        return N;
+    }
+
+    ScalarPlane<a, b> divergence(Vec2D spacing)
+    {
+        double dXdx, dYdy;
+        ScalarPlane<a, b> Diverged;
+        for (int i = 0; i < matrixSize[0]; ++i)
+        {
+            for (int j = 0; j < matrixSize[1]; ++j)
+            {
+                if (i > 0 && j > 0 && i + 1 < matrixSize[0] && j + 1 < matrixSize[1])
+                {
+                    dXdx = (operator()(i + 1, j).x - operator()(i - 1, j).x) / (2 * spacing.x);
+                    dYdy = (operator()(i, j + 1).y - operator()(i, j - 1).y) / (2 * spacing.y);
+                }
+                if (i == 0)
+                {
+                    dXdx = (operator()(i + 1, j).x - operator()(i, j).x) / (spacing.x);
+                }
+                if (i + 1 == matrixSize[0])
+                {
+                    dXdx = (operator()(i, j).x - operator()(i - 1, j).x) / (spacing.x);
+                }
+                if (j == 0)
+                {
+                    dYdy = (operator()(i, j + 1).y - operator()(i, j).y) / (spacing.y);
+                }
+                if (j + 1 == matrixSize[1])
+                {
+                    dYdy = (operator()(i, j).y - operator()(i, j - 1).y) / (spacing.y);
+                }
+                Diverged(i, j, dXdx + dYdy);
+            }
+        }
+        return Diverged;
+    }
+
+    VectorPlane<a, b> laplacian(Vec2D spacing)
+    {
+        return VectorPlane<a, b>(VectorPlane<a, b>(getX().gradient(spacing)).divergence(spacing), VectorPlane<a, b>(getY().gradient(spacing)).divergence(spacing));
+    }
+
+    void toFile(std::string filename)
+    {
+        std::ofstream myfile(filename);
+        if (myfile.is_open())
+        {
+            myfile << matrixSize[0] << "\n";
+            myfile << matrixSize[1] << "\n";
+
+            for (int i = 0; i < matrixSize[0]; ++i)
+            {
+                for (int j = 0; j < matrixSize[1]; ++j)
+                {
+                    myfile << i << " " << j << " " << operator()(i, j).sstr() << "\n";
                 }
             }
             myfile.close();

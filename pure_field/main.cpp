@@ -73,7 +73,7 @@ int main()
                             if(r_prime.normSq() != 0)
                             {
                                 // std::cout << Vec3D(i1, j1, k1).sstr() << " " << (velocity(i2, j2, k2).cross(r_prime) * (E_CHARGE/M_PROTON) * (MU_0/(4 * PI * pow(r_prime.norm(), 3)))*massDensity(i2, j2, k2)).sstr() << std::endl;
-                                magneticField.data[magneticField.index(i1, j1, k1)] +=  velocity(i2, j2, k2).cross(r_prime) * (E_CHARGE/M_PROTON) * massDensity(i2, j2, k2) * (MU_0/(4 * PI * pow(r_prime.norm(), 3)));
+                                magneticField.data[magneticField.index(i1, j1, k1)] = magneticField.data[magneticField.index(i1, j1, k1)] + velocity(i2, j2, k2).cross(r_prime) * (E_CHARGE/M_PROTON) * massDensity(i2, j2, k2) * (MU_0/(4 * PI * pow(r_prime.norm(), 3)));
                             }
                         }
                     }
